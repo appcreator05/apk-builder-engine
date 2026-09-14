@@ -74,12 +74,17 @@ jobs:
           echo "Custom logo applied successfully!"
         fi
 
-        # ৪. সবার শেষে Package Name পরিবর্তন এবং ফোল্ডার রি-লোকেট করা
+        # ৪. সবার শেষে Package Name পরিবর্তন, ফোল্ডার রি-লোকেট করা এবং সঠিক R ক্লাস import নিশ্চিত করা
         if [ ! -z "$PKG_NAME" ]; then
           echo "Updating package name and re-locating folder to: $PKG_NAME"
-          sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
-          sed -i "s/package com.creator.app;/package $PKG_NAME;/g" app/src/main/java/com/creator/app/MainActivity.java
           
+          # build.gradle ফাইলে applicationId পরিবর্তন
+          sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
+          
+          # MainActivity.java ফাইলের প্যাকেজ নাম পরিবর্তন এবং সঠিক R ক্লাস import যোগ করা
+          sed -i "s/package com.creator.app;/package $PKG_NAME;\n\nimport ${PKG_NAME}.R;/g" app/src/main/java/com/creator/app/MainActivity.java
+          
+          # নতুন ফিজিক্যাল ফোল্ডার তৈরি এবং ফাইল মুভ করা
           NEW_PATH="app/src/main/java/$(echo $PKG_NAME | tr '.' '/')"
           mkdir -p "$NEW_PATH"
           if [ "$NEW_PATH" != "app/src/main/java/com/creator/app" ]; then
