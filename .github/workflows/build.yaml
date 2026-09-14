@@ -19,12 +19,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Set up Android SDK
+    - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
     - name: Inject App Details
       run: |
-        # Pull data from GitHub event payload
         APP_NAME="${{ github.event.client_payload.app_name }}"
         PKG_NAME="${{ github.event.client_payload.pkg_name }}"
         APP_URL="${{ github.event.client_payload.app_url }}"
@@ -33,14 +32,16 @@ jobs:
         echo "Package Name: $PKG_NAME"
         echo "Target URL: $APP_URL"
 
-        # Here you can use sed or python script to update strings.xml or MainActivity.java dynamically
-        # For example, replacing URL in MainActivity.java
+        # URL আপডেট করা
         sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
 
-    - name: Build Release APK
-      run: |
-        chmod +x gradlew
-        ./gradlew assembleRelease
+    - name: Install Gradle & Build APK
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: wrapper
+
+    - name: Build Release APK with Gradle
+      run: gradle assembleRelease
 
     - name: Upload APK to Release
       uses: softprops/action-gh-release@v2
