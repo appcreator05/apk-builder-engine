@@ -42,7 +42,6 @@ jobs:
         SPLASH_INFO="${{ github.event.client_payload.splash_info }}"
         CACHE_MODE="${{ github.event.client_payload.cache_mode }}"
         
-        # ফিচারগুলোর স্ট্যাটাস রিসিভ করা (true/false)
         TXT_SEL="${{ github.event.client_payload.features.text }}"
         CONF_EXIT="${{ github.event.client_payload.features.exit }}"
         GPS_PROMPT="${{ github.event.client_payload.features.gps }}"
@@ -56,30 +55,32 @@ jobs:
         echo "Target SDK: $TARGET_SDK"
         echo "Orientation: $ORIENTATION"
         echo "Cache Mode: $CACHE_MODE"
-        echo "Features -> Text Sel: $TXT_SEL | Confirm Exit: $CONF_EXIT | Wallet Supp: $WALLET_SUP"
 
-        # ১. ইউজারের দেওয়া নিজস্ব Package Name দিয়ে build.gradle এবং MainActivity.java আপডেট করা
+        # ১. Package Name আপডেট এবং ফোল্ডার রি-লোকেট করা
         if [ ! -z "$PKG_NAME" ]; then
-          echo "Updating package name to: $PKG_NAME"
-          
-          # build.gradle ফাইলে applicationId পরিবর্তন
+          echo "Updating package name and re-locating folder to: $PKG_NAME"
           sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
-          
-          # MainActivity.java ফাইলের প্যাকেজ নাম পরিবর্তন
           sed -i "s/package com.creator.app;/package $PKG_NAME;/g" app/src/main/java/com/creator/app/MainActivity.java
+          
+          NEW_PATH="app/src/main/java/$(echo $PKG_NAME | tr '.' '/')"
+          mkdir -p "$NEW_PATH"
+          if [ "$NEW_PATH" != "app/src/main/java/com/creator/app" ]; then
+            mv app/src/main/java/com/creator/app/MainActivity.java "$NEW_PATH/"
+            rm -rf app/src/main/java/com/creator/app
+          fi
         fi
 
         # ২. জাভা ফাইলে ওয়েবসাইটের URL বসানো
-        sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
+        sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" $(find app/src/main/java -name "MainActivity.java")
 
         # ৩. ক্যাশ মোড ডাইনামিক্যালি জাভা ফাইলে আপডেট করা
         if [ "$CACHE_MODE" == "no_cache" ]; then
-          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);|g' app/src/main/java/com/creator/app/MainActivity.java
+          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);|g' $(find app/src/main/java -name "MainActivity.java")
         elif [ "$CACHE_MODE" == "highly_cached" ]; then
-          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);|g' app/src/main/java/com/creator/app/MainActivity.java
+          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);|g' $(find app/src/main/java -name "MainActivity.java")
         fi
 
-        # ৪. build.gradle ফাইলে Version Name, Version Code এবং Target SDK ডাইনামিক্যালি আপডেট করা
+        # ৪. build.gradle ফাইলে Version Name, Version Code এবং Target SDK আপডেট করা
         if [ ! -z "$VERSION_NAME" ]; then
           sed -i "s/versionName \"1.0.0\"/versionName \"$VERSION_NAME\"/g" app/build.gradle
           sed -i "s/versionName '1.0.0'/versionName '$VERSION_NAME'/g" app/build.gradle
@@ -94,7 +95,7 @@ jobs:
           sed -i "s/compileSdk 37/compileSdk $TARGET_SDK/g" app/build.gradle
         fi
 
-        # ৫. যদি ইউজার গ্যালারি থেকে ছবি আপলোড করে (Base64 ফরম্যাট), সেটি লোগো ফোল্ডারে সেভ করার প্রসেস
+        # ৫. লোগো হ্যান্ডলিং
         if [[ "$LOGO_INFO" == data:image* ]]; then
           echo "$LOGO_INFO" | sed 's/^.*, //' | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
           echo "Custom logo applied successfully!"
