@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         
-        // বেসিক ওয়েবভিউ সেটিংস ও পারফরম্যান্স অপ্টিমাইজেশন
+        // বেসিক ওয়েবভিউ সেটিংস ও পারফরম্যান্স অপ্টিমাইজেশন
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setAllowContentAccess(true);
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+
+        // ক্যাশ মোড অপশন (GitHub Actions এই লাইনটিকে ইউজারের সিলেক্ট করা মোড দিয়ে আপডেট করবে)
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setWebViewClient(new WebViewClient());
 
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         if (webView.canGoBack()) {
             webView.goBack();
         } else {
-            // কনফার্ম অন এক্সিট ফিচার (অ্যাপ থেকে বের হওয়ার আগে প্রম্পট দেখাবে)
+            // কনফার্ম অন এক্সিট ফিচার (অ্যাপ থেকে বের হওয়ার আগে প্রম্পট দেখাবে)
             new AlertDialog.Builder(this)
                 .setTitle("Exit App")
                 .setMessage("Are you sure you want to exit?")
