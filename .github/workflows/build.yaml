@@ -41,46 +41,19 @@ jobs:
         LOGO_INFO="${{ github.event.client_payload.logo_info }}"
         SPLASH_INFO="${{ github.event.client_payload.splash_info }}"
         CACHE_MODE="${{ github.event.client_payload.cache_mode }}"
-        
-        TXT_SEL="${{ github.event.client_payload.features.text }}"
-        CONF_EXIT="${{ github.event.client_payload.features.exit }}"
-        GPS_PROMPT="${{ github.event.client_payload.features.gps }}"
-        REFRESH="${{ github.event.client_payload.features.refresh }}"
-        WALLET_SUP="${{ github.event.client_payload.features.wallet }}"
 
-        echo "Building App Name: $APP_NAME"
-        echo "Package Name: $PKG_NAME"
-        echo "Target URL: $APP_URL"
-        echo "Version: $VERSION_NAME (Code: $VERSION_CODE)"
-        echo "Target SDK: $TARGET_SDK"
-        echo "Orientation: $ORIENTATION"
-        echo "Cache Mode: $CACHE_MODE"
+        echo "Building App Name: $APP_NAME for Package: $PKG_NAME"
 
-        # ১. Package Name আপডেট এবং ফোল্ডার রি-লোকেট করা
-        if [ ! -z "$PKG_NAME" ]; then
-          echo "Updating package name and re-locating folder to: $PKG_NAME"
-          sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
-          sed -i "s/package com.creator.app;/package $PKG_NAME;/g" app/src/main/java/com/creator/app/MainActivity.java
-          
-          NEW_PATH="app/src/main/java/$(echo $PKG_NAME | tr '.' '/')"
-          mkdir -p "$NEW_PATH"
-          if [ "$NEW_PATH" != "app/src/main/java/com/creator/app" ]; then
-            mv app/src/main/java/com/creator/app/MainActivity.java "$NEW_PATH/"
-            rm -rf app/src/main/java/com/creator/app
-          fi
-        fi
+        # ১. সবার আগে জাভা ফাইলে ওয়েবসাইটের URL এবং Cache Mode বসানো
+        sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
 
-        # ২. জাভা ফাইলে ওয়েবসাইটের URL বসানো
-        sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" $(find app/src/main/java -name "MainActivity.java")
-
-        # ৩. ক্যাশ মোড ডাইনামিক্যালি জাভা ফাইলে আপডেট করা
         if [ "$CACHE_MODE" == "no_cache" ]; then
-          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);|g' $(find app/src/main/java -name "MainActivity.java")
+          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);|g' app/src/main/java/com/creator/app/MainActivity.java
         elif [ "$CACHE_MODE" == "highly_cached" ]; then
-          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);|g' $(find app/src/main/java -name "MainActivity.java")
+          sed -i 's|webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);|webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);|g' app/src/main/java/com/creator/app/MainActivity.java
         fi
 
-        # ৪. build.gradle ফাইলে Version Name, Version Code এবং Target SDK আপডেট করা
+        # ২. build.gradle ফাইলে Version Name, Version Code এবং Target SDK আপডেট করা
         if [ ! -z "$VERSION_NAME" ]; then
           sed -i "s/versionName \"1.0.0\"/versionName \"$VERSION_NAME\"/g" app/build.gradle
           sed -i "s/versionName '1.0.0'/versionName '$VERSION_NAME'/g" app/build.gradle
@@ -95,10 +68,24 @@ jobs:
           sed -i "s/compileSdk 37/compileSdk $TARGET_SDK/g" app/build.gradle
         fi
 
-        # ৫. লোগো হ্যান্ডলিং
+        # ৩. লোগো আপলোড হ্যান্ডলিং
         if [[ "$LOGO_INFO" == data:image* ]]; then
           echo "$LOGO_INFO" | sed 's/^.*, //' | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
           echo "Custom logo applied successfully!"
+        fi
+
+        # ৪. সবার শেষে Package Name পরিবর্তন এবং ফোল্ডার রি-লোকেট করা
+        if [ ! -z "$PKG_NAME" ]; then
+          echo "Updating package name and re-locating folder to: $PKG_NAME"
+          sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
+          sed -i "s/package com.creator.app;/package $PKG_NAME;/g" app/src/main/java/com/creator/app/MainActivity.java
+          
+          NEW_PATH="app/src/main/java/$(echo $PKG_NAME | tr '.' '/')"
+          mkdir -p "$NEW_PATH"
+          if [ "$NEW_PATH" != "app/src/main/java/com/creator/app" ]; then
+            mv app/src/main/java/com/creator/app/MainActivity.java "$NEW_PATH/"
+            rm -rf app/src/main/java/com/creator/app
+          fi
         fi
 
     - name: Set up Gradle 8.5
