@@ -32,13 +32,12 @@ jobs:
         echo "Package Name: $PKG_NAME"
         echo "Target URL: $APP_URL"
 
-        # URL আপডেট করা
         sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
 
-    - name: Install Gradle & Build APK
+    - name: Set up Gradle 8.5
       uses: gradle/actions/setup-gradle@v3
       with:
-        gradle-version: wrapper
+        gradle-version: '8.5'
 
     - name: Build Release APK with Gradle
       run: gradle assembleRelease
