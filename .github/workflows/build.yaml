@@ -41,13 +41,8 @@ jobs:
         LOGO_INFO="${{ github.event.client_payload.logo_info }}"
         SPLASH_INFO="${{ github.event.client_payload.splash_info }}"
         CACHE_MODE="${{ github.event.client_payload.cache_mode }}"
-        
-        # ফিচারগুলোর স্ট্যাটাস রিসিভ করা (true/false)
-        TXT_SEL="${{ github.event.client_payload.features.text }}"
-        CONF_EXIT="${{ github.event.client_payload.features.exit }}"
-        GPS_PROMPT="${{ github.event.client_payload.features.gps }}"
-        REFRESH="${{ github.event.client_payload.features.refresh }}"
-        WALLET_SUP="${{ github.event.client_payload.features.wallet }}"
+        ADS_NETWORK="${{ github.event.client_payload.ads_network }}"
+        ADS_INTERVAL="${{ github.event.client_payload.ads_interval }}"
 
         echo "Building App Name: $APP_NAME"
         echo "Package Name: $PKG_NAME"
@@ -56,7 +51,7 @@ jobs:
         echo "Target SDK: $TARGET_SDK"
         echo "Orientation: $ORIENTATION"
         echo "Cache Mode: $CACHE_MODE"
-        echo "Features -> Text Sel: $TXT_SEL | Confirm Exit: $CONF_EXIT | Wallet Supp: $WALLET_SUP"
+        echo "Ads Network: $ADS_NETWORK (Interval: ${ADS_INTERVAL}m)"
 
         # ১. ইউজারের দেওয়া নিজস্ব Package Name দিয়ে build.gradle এবং MainActivity.java আপডেট করা
         if [ ! -z "$PKG_NAME" ]; then
