@@ -22,6 +22,10 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Install SDK Platforms
+      run: |
+        echo "y" | sdkmanager "platforms;android-36" "build-tools;34.0.0"
+
     - name: Inject App Details
       run: |
         APP_NAME="${{ github.event.client_payload.app_name }}"
