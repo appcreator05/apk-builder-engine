@@ -60,8 +60,8 @@ jobs:
         files: |
           app/build/outputs/apk/release/app-release.apk
           app/build/outputs/apk/**/*.apk
-        tag_name: app-v-${{ github.run_number }}
-        name: "Generated App v${{ github.run_number }}"
-        body: "Automated Web-to-APK Build by GitHub Actions."
+        tag_name: app-${{ github.event.client_payload.pkg_name }}-${{ github.run_number }}
+        name: "${{ github.event.client_payload.app_name }} (${{ github.event.client_payload.pkg_name }})"
+        body: "Automated Web-to-APK Build for Package: ${{ github.event.client_payload.pkg_name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
