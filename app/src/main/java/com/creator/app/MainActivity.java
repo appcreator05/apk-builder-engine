@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        // ক্যাশ মোড অপশন (GitHub Actions এই লাইনটিকে ইউজারের সিলেক্ট করা মোড দিয়ে আপডেট করবে)
+        // ক্যাশ মোড অপশন (GitHub Actions এই লাইনটিকে ইউজারের সিলেক্ট করা মোড দিয়ে আপডেট করবে)
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setWebViewClient(new WebViewClient());
