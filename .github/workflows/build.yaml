@@ -56,10 +56,21 @@ jobs:
         echo "Orientation: $ORIENTATION"
         echo "Features -> Text Sel: $TXT_SEL | Confirm Exit: $CONF_EXIT | Wallet Supp: $WALLET_SUP"
 
-        # ১. জাভা ফাইলে ওয়েবসাইটের URL বসানো
+        # ১. ইউজারের দেওয়া নিজস্ব Package Name দিয়ে build.gradle এবং MainActivity.java আপডেট করা
+        if [ ! -z "$PKG_NAME" ]; then
+          echo "Updating package name to: $PKG_NAME"
+          
+          # build.gradle ফাইলে applicationId পরিবর্তন
+          sed -i "s/applicationId \"com.creator.app\"/applicationId \"$PKG_NAME\"/g" app/build.gradle
+          
+          # MainActivity.java ফাইলের প্যাকেজ নাম পরিবর্তন
+          sed -i "s/package com.creator.app;/package $PKG_NAME;/g" app/src/main/java/com/creator/app/MainActivity.java
+        fi
+
+        # ২. জাভা ফাইলে ওয়েবসাইটের URL বসানো
         sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
 
-        # ২. build.gradle ফাইলে Version Name, Version Code এবং Target SDK ডাইনামিক্যালি আপডেট করা
+        # ৩. build.gradle ফাইলে Version Name, Version Code এবং Target SDK ডাইনামিক্যালি আপডেট করা
         if [ ! -z "$VERSION_NAME" ]; then
           sed -i "s/versionName \"1.0.0\"/versionName \"$VERSION_NAME\"/g" app/build.gradle
           sed -i "s/versionName '1.0.0'/versionName '$VERSION_NAME'/g" app/build.gradle
@@ -74,7 +85,7 @@ jobs:
           sed -i "s/compileSdk 37/compileSdk $TARGET_SDK/g" app/build.gradle
         fi
 
-        # ৩. যদি ইউজার গ্যালারি থেকে ছবি আপলোড করে (Base64 ফরম্যাট), সেটি লোগো ফোল্ডারে সেভ করার প্রসেস
+        # ৪. যদি ইউজার গ্যালারি থেকে ছবি আপলোড করে (Base64 ফরম্যাট), সেটি লোগো ফোল্ডারে সেভ করার প্রসেস
         if [[ "$LOGO_INFO" == data:image* ]]; then
           echo "$LOGO_INFO" | sed 's/^.*, //' | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
           echo "Custom logo applied successfully!"
