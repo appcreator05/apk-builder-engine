@@ -42,8 +42,12 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleRelease
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload APK to Release
+      uses: softprops/action-gh-release@v2
       with:
-        name: generated-apk
-        path: app/build/outputs/apk/release/app-release.apk
+        files: app/build/outputs/apk/release/app-release.apk
+        tag_name: app-v-${{ github.run_number }}
+        name: "Generated App v${{ github.run_number }}"
+        body: "Automated Web-to-APK Build by GitHub Actions."
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
