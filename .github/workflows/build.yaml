@@ -29,17 +29,48 @@ jobs:
       run: |
         echo "y" | sdkmanager "platforms;android-36" "build-tools;34.0.0"
 
-    - name: Inject App Details
+    - name: Inject App Details & Customizations
       run: |
         APP_NAME="${{ github.event.client_payload.app_name }}"
         PKG_NAME="${{ github.event.client_payload.pkg_name }}"
         APP_URL="${{ github.event.client_payload.app_url }}"
+        VERSION_NAME="${{ github.event.client_payload.version_name }}"
+        VERSION_CODE="${{ github.event.client_payload.version_code }}"
+        TARGET_SDK="${{ github.event.client_payload.target_sdk }}"
+        ORIENTATION="${{ github.event.client_payload.orientation }}"
+        LOGO_INFO="${{ github.event.client_payload.logo_info }}"
+        SPLASH_INFO="${{ github.event.client_payload.splash_info }}"
 
         echo "Building App Name: $APP_NAME"
         echo "Package Name: $PKG_NAME"
         echo "Target URL: $APP_URL"
+        echo "Version: $VERSION_NAME (Code: $VERSION_CODE)"
+        echo "Target SDK: $TARGET_SDK"
+        echo "Orientation: $ORIENTATION"
 
+        # ১. জাভা ফাইলে ওয়েবসাইটের URL বসানো
         sed -i "s|DEFAULT_URL_HERE|$APP_URL|g" app/src/main/java/com/creator/app/MainActivity.java
+
+        # ২. build.gradle ফাইলে Version Name ও Version Code এবং Target SDK ডাইনামিক্যালি আপডেট করা
+        if [ ! -z "$VERSION_NAME" ]; then
+          sed -i "s/versionName \"1.0.0\"/versionName \"$VERSION_NAME\"/g" app/build.gradle
+          sed -i "s/versionName '1.0.0'/versionName '$VERSION_NAME'/g" app/build.gradle
+        fi
+
+        if [ ! -z "$VERSION_CODE" ]; then
+          sed -i "s/versionCode 1/versionCode $VERSION_CODE/g" app/build.gradle
+        fi
+
+        if [ ! -z "$TARGET_SDK" ]; then
+          sed -i "s/targetSdk 37/targetSdk $TARGET_SDK/g" app/build.gradle
+          sed -i "s/compileSdk 37/compileSdk $TARGET_SDK/g" app/build.gradle
+        fi
+
+        # ৩. যদি ইউজার গ্যালারি থেকে ছবি আপলোড করে (Base64 ফরম্যাট), সেটি লোগো ফোল্ডারে সেভ করার প্রসেস
+        if [[ "$LOGO_INFO" == data:image* ]]; then
+          echo "$LOGO_INFO" | sed 's/^.*, //' | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
+          echo "Custom logo applied successfully!"
+        fi
 
     - name: Set up Gradle 8.5
       uses: gradle/actions/setup-gradle@v3
@@ -62,6 +93,6 @@ jobs:
           app/build/outputs/apk/**/*.apk
         tag_name: app-${{ github.event.client_payload.pkg_name }}-${{ github.run_number }}
         name: "${{ github.event.client_payload.app_name }} (${{ github.event.client_payload.pkg_name }})"
-        body: "Automated Web-to-APK Build for Package: ${{ github.event.client_payload.pkg_name }}"
+        body: "Automated Web-to-APK Build for Package: ${{ github.event.client_payload.pkg_name }} | Version: ${{ github.event.client_payload.version_name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
